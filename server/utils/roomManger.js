@@ -4,7 +4,7 @@ const rooms = new Map();
 const socketRooms = new Map();
 
 //function to generate room code
-export function generateRoomCode() {
+ function generateRoomCode() {
     const characters = "ABCDEFGHIJKLMNIOPQRSTUVXYZ0123456789";
     const length = characters.length;
     let code = '';
@@ -13,15 +13,11 @@ export function generateRoomCode() {
         code += characters.charAt(Math.floor(Math.random() * characters.length));
     }
     return code;
-    // let random_number = Math.random();
-    // console.log(Math.floor(random_number * length));
-    // console.log(code);
-    // console.log(length);
 }
 
 
 //function to generate rooms
-export async function generateRoom(socketId) {
+ async function generateRoom(socketId) {
     if (socketRooms.has(socketId)) {
         const existingRoom = socketRooms.get(socketId);
         console.log(`Socket ${socketId} is already in the room ${existingRoom}`);
@@ -33,19 +29,19 @@ export async function generateRoom(socketId) {
 
     let roomCode;
 
-    roomCode = generateRoom();
-    isUnique = false;
+    roomCode = generateRoomCode();
+    let isUnique = false;
 
     //checks if the generated room is unique or not
     while (!isUnique) {
-        roomCode = generateRoom();
-        if (rooms.get(roomCode)) {
+        roomCode = generateRoomCode();
+        if (!rooms.get(roomCode)) {
             isUnique = true;
         }
 
     }
 
-    rooms.set({
+    rooms.set(roomCode, {
         creator: socketId,
         players: [{
             id: socketId,
@@ -65,7 +61,7 @@ export async function generateRoom(socketId) {
 
 
 //function to join rooms
-export async function joinRoom(socketId, roomCode) {
+ async function joinRoom(socketId, roomCode) {
     if (socketRooms.has(socketId)) {
         console.log(`${socketId} already present in the room, exiting...`);
     }
@@ -93,7 +89,7 @@ export async function joinRoom(socketId, roomCode) {
 
     //Check to see if the room is full or not 
 
-    const roomSize = room.player.length;
+    const roomSize = room.players.length;
 
     if (roomSize >= 2) {
         console.log(`Room ${roomCode} is already full`);
@@ -119,7 +115,7 @@ export async function joinRoom(socketId, roomCode) {
 }
 
 // function to set player status to "Ready"
-export async function setPlayerReady(socketId, roomCode) {
+ async function setPlayerReady(socketId, roomCode) {
     const room = rooms.get(roomCode);
 
     if (!room) {
@@ -146,7 +142,7 @@ export async function setPlayerReady(socketId, roomCode) {
 }
 
 //function which starts the game
-export async function gameStart(socketId, roomCode) {
+ async function gameStart(socketId, roomCode) {
     const room = rooms.get(roomCode);
 
     if (!room) {
@@ -168,7 +164,7 @@ export async function gameStart(socketId, roomCode) {
 }
 
 //function to submit the drawings
-export function submitDrawings(socketId, roomCode, drawingData) {
+ function submitDrawings(socketId, roomCode, drawingData) {
     const room = rooms.get(roomCode);
 
     if (!room) {
@@ -180,7 +176,7 @@ export function submitDrawings(socketId, roomCode, drawingData) {
 
     room.drawings[socketId] = drawingData;
 
-    const allSubmitted = room.players.every(p => p.drawings[p.id]);
+    const allSubmitted = room.players.every(p => room.drawings[p.id]);
 
     if (allSubmitted) {
         room.status = "judging";
@@ -207,7 +203,7 @@ export function submitDrawings(socketId, roomCode, drawingData) {
 }
 
 // function to handle Disconnection form the room
-export function handleDisconnect(socketId) {
+ function handleDisconnect(socketId) {
     console.log('User disconnected:', socketId);
     
     if (socketRooms.has(socketId)) {
@@ -233,5 +229,14 @@ export function handleDisconnect(socketId) {
     
     return null;
   }
-  
 
+const roomManager = {
+    generateRoom,
+    joinRoom,
+    setPlayerReady,
+    gameStart,
+    submitDrawings,
+    handleDisconnect,
+};
+  
+export default roomManager;

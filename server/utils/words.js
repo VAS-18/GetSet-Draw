@@ -1,13 +1,13 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-export async function words() {
-    const GEMINI_API_KEY = "AIzaSyCO-rfZob9TyOQtpPulKk6zeP3mA-goHwo";
+const gemini = process.env.GEMINI_API_KEY;
+console.log(gemini);
 
-    if (!GEMINI_API_KEY) {
+export async function words() {
+    if (!gemini) {
         throw new Error("GEMINI WORD KEY NOT FOUND");
     }
-
-    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    const genAI = new GoogleGenerativeAI(gemini);
 
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
@@ -21,6 +21,8 @@ export async function words() {
     // return gameWordsText;
 
 }
+
+words();
 
 
 
