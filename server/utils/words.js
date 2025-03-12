@@ -1,8 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const gemini = process.env.GEMINI_API_KEY;
-console.log(gemini);
-
+const gemini = process.env.GEMINI_API_KEY || 'AIzaSyCO-rfZob9TyOQtpPulKk6zeP3mA-goHwo' ;
 export async function words() {
     if (!gemini) {
         throw new Error("GEMINI WORD KEY NOT FOUND");
@@ -18,12 +16,7 @@ export async function words() {
 
     console.log(gameWordsText);
 
-    // return gameWordsText;
+    return gameWordsText;
 
 }
-
-words();
-
-
-
 

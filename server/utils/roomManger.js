@@ -230,6 +230,79 @@ const socketRooms = new Map();
     return null;
   }
 
+//function to handle reconnection
+
+  function handleReconnection(oldSocketId, newSocketId) {
+    console.log(`Client attempting to reconnect with previous ID: ${oldSocketId}`);
+
+    for (const [roomCode, room] of rooms.entries()) {
+      const playerIndex = room.players.findIndex(p => p.id === oldSocketId);
+      
+      if (playerIndex !== -1) {
+        console.log(`Found previous socket ${oldSocketId} in room ${roomCode}, updating to new socket ID ${newSocketId}`);
+        
+
+        room.players[playerIndex].id = newSocketId;
+        
+        if (room.creator === oldSocketId) {
+          room.creator = newSocketId;
+        }
+        
+
+        if (room.drawings[oldSocketId]) {
+          room.drawings[newSocketId] = room.drawings[oldSocketId];
+          delete room.drawings[oldSocketId];
+        }
+        
+        if (room.scores[oldSocketId]) {
+          room.scores[newSocketId] = room.scores[oldSocketId];
+          delete room.scores[oldSocketId];
+        }
+        
+        // Update socket to room mapping
+        socketRooms.set(newSocketId, roomCode);
+        
+        return { success: true, roomCode, room };
+      }
+    }
+    
+    return { success: false };
+  }
+  
+  // Get room details
+  function getRoomDetails(roomCode) {
+    const room = rooms.get(roomCode);
+    
+    if (!room) {
+      return { success: false, message: 'Room not found' };
+    }
+    
+    return { success: true, room };
+  }
+  
+
+  function getAllRooms() {
+    const roomsData = {};
+    rooms.forEach((room, code) => {
+      roomsData[code] = {
+        ...room,
+        drawings: Object.fromEntries(Object.entries(room.drawings)),
+        scores: Object.fromEntries(Object.entries(room.scores))
+      };
+    });
+    
+    const socketMappings = {};
+    socketRooms.forEach((roomCode, socketId) => {
+      socketMappings[socketId] = roomCode;
+    });
+    
+    return {
+      rooms: roomsData,
+      socketRooms: socketMappings
+    };
+  }
+  
+
 const roomManager = {
     generateRoom,
     joinRoom,
@@ -237,6 +310,9 @@ const roomManager = {
     gameStart,
     submitDrawings,
     handleDisconnect,
+    handleReconnection,
+    getAllRooms,
+    getRoomDetails
 };
   
 export default roomManager;
